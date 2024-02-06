@@ -6,6 +6,8 @@
 #include <QSettings>
 #include <QFileDialog>
 #include <QColorDialog>
+#include <QFileInfo>
+#include <QStyle>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -15,10 +17,12 @@ MainWindow::MainWindow(QWidget *parent)
 
     setWindowTitle("Brian's C++ Painting App");
 
+    qApp->setStyle("fusion");
+
     qApp->setStyleSheet("QMainWindow { background-color: #2F4858; }"
-                    "QToolBar { background-color: #136173; border: none; }"
+                    "QToolBar { background-color: #136173; border: none; margin: 2px; }"
                     "QToolBar::separator { background-color: #009487; width: 2px; height: 2px; margin: 5px; }"
-                    "QToolButton { background-color: #136173; border: none; color: white; margin: 0px; padding: 5px; }"
+                    "QToolButton { background-color: #136173; border: none; color: white; margin: 0px; padding: 5px; border-radius: 3px; }"
                     "QToolButton:hover { background-color: #00AC7B; }"
                     "QToolButton:checked { background-color: #5EC265; }");
 
@@ -31,19 +35,20 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Create a toolbar
     QToolBar *toolbar = addToolBar("toolbar");
+    toolbar->setIconSize(QSize(20, 20));
 
     // Load the last selected tool
     QSettings settings("BrianPoole", "CPP-Paint");
     paintingArea->selectTool(static_cast<PaintingArea::Tool>(settings.value("lastSelectedTool", PaintingArea::Pencil).toInt()));
 
     // Create actions for clearing the image and changing the color
-    QAction *clearAction = new QAction("New", this);
+    QAction *clearAction = new QAction(style()->standardIcon(QStyle::SP_FileIcon), "Clear", this);
     toolbar->addAction(clearAction);
     connect(clearAction, &QAction::triggered, [paintingArea]() { paintingArea->clearImage(); });
 
 
     // Create actions for Load/Save
-    QAction *loadAction = new QAction("Load", this);
+    QAction *loadAction = new QAction(style()->standardIcon(QStyle::SP_DialogOpenButton), "Load", this);
     toolbar->addAction(loadAction);
     connect(loadAction, &QAction::triggered, [paintingArea, this]() { 
         // Prompt the user to select an image file to load
@@ -52,7 +57,7 @@ MainWindow::MainWindow(QWidget *parent)
             paintingArea->loadImage(fileName); 
         }
     });
-    QAction *saveAction = new QAction("Save", this);
+    QAction *saveAction = new QAction(style()->standardIcon(QStyle::SP_DialogSaveButton), "Save", this);
     toolbar->addAction(saveAction);
     connect(saveAction, &QAction::triggered, [paintingArea]() { 
         // Prompt the user to select a file name and location to save the image
@@ -67,10 +72,10 @@ MainWindow::MainWindow(QWidget *parent)
     toolbar->addSeparator();
 
     // Create actions for Undo/Redo
-    QAction *undoAction = new QAction("Undo", this);
+    QAction *undoAction = new QAction(style()->standardIcon(QStyle::SP_ArrowBack), "Undo", this);
     toolbar->addAction(undoAction);
     connect(undoAction, &QAction::triggered, [paintingArea]() { paintingArea->undo(); });
-    QAction *redoAction = new QAction("Redo", this);
+    QAction *redoAction = new QAction(style()->standardIcon(QStyle::SP_ArrowForward), "Redo", this);
     toolbar->addAction(redoAction);
     connect(redoAction, &QAction::triggered, [paintingArea]() { paintingArea->redo(); });
 
