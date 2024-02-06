@@ -17,8 +17,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     setWindowTitle("Brian's C++ Painting App");
 
+    // Set the application style and stylesheet
     qApp->setStyle("fusion");
-
     qApp->setStyleSheet("QMainWindow { background-color: #2F4858; }"
                     "QToolBar { background-color: #136173; border: none; margin: 2px; }"
                     "QToolBar::separator { background-color: #009487; width: 2px; height: 2px; margin: 5px; }"
@@ -46,14 +46,14 @@ MainWindow::MainWindow(QWidget *parent)
     toolbar->addAction(clearAction);
     connect(clearAction, &QAction::triggered, [paintingArea]() { paintingArea->clearImage(); });
 
-
     // Create actions for Load/Save
     QAction *loadAction = new QAction(style()->standardIcon(QStyle::SP_DialogOpenButton), "Load", this);
     toolbar->addAction(loadAction);
     connect(loadAction, &QAction::triggered, [paintingArea, this]() { 
         // Prompt the user to select an image file to load
         QString fileName = QFileDialog::getOpenFileName(this, tr("Open Image"), "", tr("Images (*.png *.xpm *.jpg)"));
-        if (!fileName.isEmpty()) {
+        if (!fileName.isEmpty()) 
+        {
             paintingArea->loadImage(fileName); 
         }
     });
@@ -63,7 +63,8 @@ MainWindow::MainWindow(QWidget *parent)
         // Prompt the user to select a file name and location to save the image
         QString fileName = QFileDialog::getSaveFileName(paintingArea, tr("Save Image"), "", tr("Images (*.png *.xpm *.jpg)"));
         QString fileType = QFileInfo(fileName).suffix();
-        if (!fileName.isEmpty()) {
+        if (!fileName.isEmpty()) 
+        {
             paintingArea->saveImage(fileName, fileType.toStdString().c_str()); 
         }
     });
@@ -85,99 +86,47 @@ MainWindow::MainWindow(QWidget *parent)
     // Create a QActionGroup
     QActionGroup *actionGroup = new QActionGroup(this);
 
-    // Create an action for the "Pencil" button
-    QAction *selectToolPencilAction = new QAction("Pencil", this);
-    selectToolPencilAction->setCheckable(true); // Make the action checkable
-    actionGroup->addAction(selectToolPencilAction); // Add the action to the action group
-    toolbar->addAction(selectToolPencilAction);
-    connect(selectToolPencilAction, &QAction::triggered, [paintingArea, selectToolPencilAction]() { 
-        paintingArea->selectTool(PaintingArea::Pencil); 
-        selectToolPencilAction->setChecked(true); 
-    });
-    // Set the action as the checked action if the tool is Pencil
-    if (paintingArea->getSelectedTool() == PaintingArea::Pencil) {
-        selectToolPencilAction->setChecked(true);
-    }
-
-    // Create an action for the "Line" button
-    QAction *selectToolLineAction = new QAction("Line", this);
-    selectToolLineAction->setCheckable(true);
-    actionGroup->addAction(selectToolLineAction);
-    toolbar->addAction(selectToolLineAction);
-    connect(selectToolLineAction, &QAction::triggered, [paintingArea, selectToolLineAction]() { 
-        paintingArea->selectTool(PaintingArea::Line); 
-        selectToolLineAction->setChecked(true); 
-    });
-    // Set the action as the checked action if the tool is Line
-    if (paintingArea->getSelectedTool() == PaintingArea::Line) {
-        selectToolLineAction->setChecked(true);
-    }
-
-    // Create an action for the "Rectangle" button
-    QAction *selectToolRectangleAction = new QAction("Rectangle", this);
-    selectToolRectangleAction->setCheckable(true);
-    actionGroup->addAction(selectToolRectangleAction);
-    toolbar->addAction(selectToolRectangleAction);
-    connect(selectToolRectangleAction, &QAction::triggered, [paintingArea, selectToolRectangleAction]() { 
-        paintingArea->selectTool(PaintingArea::Rectangle); 
-        selectToolRectangleAction->setChecked(true); 
-    });
-    // Set the action as the checked action if the tool is Rectangle
-    if (paintingArea->getSelectedTool() == PaintingArea::Rectangle) {
-        selectToolRectangleAction->setChecked(true);
-    }
-
-    // Create an action for the "Ellipse" button
-    QAction *selectToolEllipseAction = new QAction("Ellipse", this);
-    selectToolEllipseAction->setCheckable(true);
-    actionGroup->addAction(selectToolEllipseAction);
-    toolbar->addAction(selectToolEllipseAction);
-    connect(selectToolEllipseAction, &QAction::triggered, [paintingArea, selectToolEllipseAction]() { 
-        paintingArea->selectTool(PaintingArea::Ellipse); 
-        selectToolEllipseAction->setChecked(true); 
-    });
-    // Set the action as the checked action if the tool is Ellipse
-    if (paintingArea->getSelectedTool() == PaintingArea::Ellipse) {
-        selectToolEllipseAction->setChecked(true);
-    }
-
-    // Create an action for the "Star" button
-    QAction *selectToolStarAction = new QAction("Star", this);
-    selectToolStarAction->setCheckable(true);
-    actionGroup->addAction(selectToolStarAction);
-    toolbar->addAction(selectToolStarAction);
-    connect(selectToolStarAction, &QAction::triggered, [paintingArea, selectToolStarAction]() { 
-        paintingArea->selectTool(PaintingArea::Star); 
-        selectToolStarAction->setChecked(true); 
-    });
-    // Set the action as the checked action if the tool is Star
-    if (paintingArea->getSelectedTool() == PaintingArea::Star) {
-        selectToolStarAction->setChecked(true);
-    }
-
-    // Create an action for the "Eraser" button
-    QAction *selectToolEraserAction = new QAction("Eraser", this);
-    selectToolEraserAction->setCheckable(true);
-    actionGroup->addAction(selectToolEraserAction);
-    toolbar->addAction(selectToolEraserAction);
-    connect(selectToolEraserAction, &QAction::triggered, [paintingArea, selectToolEraserAction]() { 
-        paintingArea->selectTool(PaintingArea::Eraser); 
-        selectToolEraserAction->setChecked(true); 
-    });
-    // Set the action as the checked action if the tool is Eraser
-    if (paintingArea->getSelectedTool() == PaintingArea::Eraser) {
-        selectToolEraserAction->setChecked(true);
-    }
+    // Create actions for each tool
+    createToolAction("Pencil", PaintingArea::Pencil, actionGroup, toolbar, paintingArea);
+    createToolAction("Line", PaintingArea::Line, actionGroup, toolbar, paintingArea);
+    createToolAction("Rectangle", PaintingArea::Rectangle, actionGroup, toolbar, paintingArea);
+    createToolAction("Ellipse", PaintingArea::Ellipse, actionGroup, toolbar, paintingArea);
+    createToolAction("Star", PaintingArea::Star, actionGroup, toolbar, paintingArea);
+    createToolAction("Eraser", PaintingArea::Eraser, actionGroup, toolbar, paintingArea);
 
     // Create an action for changing the color
     QAction *colorAction = new QAction("Color", this);
     toolbar->addAction(colorAction);
     connect(colorAction, &QAction::triggered, [paintingArea, colorAction, this]() {
-        QColor color = QColorDialog::getColor(paintingArea->getColor(), this, "Select Color");
+        QColor color = QColorDialog::getColor(paintingArea->getColor(), this, "Select Pen Color");
         if (color.isValid()) {
-            paintingArea->setColor(color);
+            paintingArea->setPenColor(color);
         }
     });
+}
+
+/**
+ * Create an action for a tool and add it to the toolbar
+ */
+void MainWindow::createToolAction(const QString& name, int tool, QActionGroup* actionGroup, QToolBar* toolbar, PaintingArea* paintingArea) 
+{
+    // Create an action for the tool
+    QAction *action = new QAction(name, this);
+    action->setCheckable(true);
+    actionGroup->addAction(action);
+    toolbar->addAction(action);
+
+    // Connect the action to the PaintingArea's selectTool method
+    connect(action, &QAction::triggered, [paintingArea, action, tool]() { 
+        paintingArea->selectTool(static_cast<PaintingArea::Tool>(tool)); 
+        action->setChecked(true); 
+    });
+
+    // Set the action as checked if it is the currently selected tool
+    if (paintingArea->getSelectedTool() == tool) 
+    {
+        action->setChecked(true);
+    }
 }
 
 MainWindow::~MainWindow()
