@@ -18,6 +18,8 @@ public:
     void undo();
     void redo();
     void clearImage();
+    void loadImage(const QString &fileName);
+    void saveImage(const QString &fileName, const char *fileFormat);
 
 protected:
     void paintEvent(QPaintEvent *event) override;

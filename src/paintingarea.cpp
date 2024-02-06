@@ -134,6 +134,16 @@ void PaintingArea::clearImage() {
     update();
 }
 
+void PaintingArea::loadImage(const QString &fileName) {
+    image = QPixmap(fileName); // Load the image from the file
+    tempImage = image; // Copy the image to the temporary image
+    update();
+}
+
+void PaintingArea::saveImage(const QString &fileName, const char *fileFormat) {
+    image.save(fileName, fileFormat);
+}
+
 void PaintingArea::paintEvent(QPaintEvent *event) {
     QPainter painter(this);
 
