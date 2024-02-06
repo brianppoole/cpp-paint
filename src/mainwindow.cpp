@@ -5,6 +5,7 @@
 #include <QActionGroup>
 #include <QSettings>
 #include <QFileDialog>
+#include <QColorDialog>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -12,9 +13,21 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    setWindowTitle("Brian's C++ Painting App");
+
+    qApp->setStyleSheet("QMainWindow { background-color: #2F4858; }"
+                    "QToolBar { background-color: #136173; border: none; }"
+                    "QToolBar::separator { background-color: #009487; width: 2px; height: 2px; margin: 5px; }"
+                    "QToolButton { background-color: #136173; border: none; color: white; margin: 0px; padding: 5px; }"
+                    "QToolButton:hover { background-color: #00AC7B; }"
+                    "QToolButton:checked { background-color: #5EC265; }");
+
     // Create a PaintingArea and set it as the central widget
     PaintingArea *paintingArea = new PaintingArea(this);
     this->setCentralWidget(paintingArea);
+
+    paintingArea->setStyleSheet("background-color: white;");
+    paintingArea->setCursor(Qt::CrossCursor);
 
     // Create a toolbar
     QToolBar *toolbar = addToolBar("toolbar");
@@ -23,9 +36,11 @@ MainWindow::MainWindow(QWidget *parent)
     QSettings settings("BrianPoole", "CPP-Paint");
     paintingArea->selectTool(static_cast<PaintingArea::Tool>(settings.value("lastSelectedTool", PaintingArea::Pencil).toInt()));
 
-    // Set the style of the toolbar buttons
-    toolbar->setIconSize(QSize(50, 50));
-    toolbar->setStyleSheet("QToolButton:checked { background-color: #ffaa00; }");
+    // Create actions for clearing the image and changing the color
+    QAction *clearAction = new QAction("New", this);
+    toolbar->addAction(clearAction);
+    connect(clearAction, &QAction::triggered, [paintingArea]() { paintingArea->clearImage(); });
+
 
     // Create actions for Load/Save
     QAction *loadAction = new QAction("Load", this);
@@ -48,6 +63,9 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
 
+    // Add a separator to the toolbar
+    toolbar->addSeparator();
+
     // Create actions for Undo/Redo
     QAction *undoAction = new QAction("Undo", this);
     toolbar->addAction(undoAction);
@@ -55,6 +73,9 @@ MainWindow::MainWindow(QWidget *parent)
     QAction *redoAction = new QAction("Redo", this);
     toolbar->addAction(redoAction);
     connect(redoAction, &QAction::triggered, [paintingArea]() { paintingArea->redo(); });
+
+    // Add a separator to the toolbar
+    toolbar->addSeparator();
 
     // Create a QActionGroup
     QActionGroup *actionGroup = new QActionGroup(this);
@@ -128,6 +149,16 @@ MainWindow::MainWindow(QWidget *parent)
     if (paintingArea->getSelectedTool() == PaintingArea::Eraser) {
         selectToolEraserAction->setChecked(true);
     }
+
+    // Create an action for changing the color
+    QAction *colorAction = new QAction("Color", this);
+    toolbar->addAction(colorAction);
+    connect(colorAction, &QAction::triggered, [paintingArea, colorAction, this]() {
+        QColor color = QColorDialog::getColor(paintingArea->getColor(), this, "Select Color");
+        if (color.isValid()) {
+            paintingArea->setColor(color);
+        }
+    });
 }
 
 MainWindow::~MainWindow()

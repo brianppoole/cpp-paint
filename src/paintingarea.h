@@ -13,8 +13,10 @@ public:
     enum Tool { Pencil, Line, Rectangle, Ellipse, Eraser }; // Define the Draw and Erase enum values
 
     Tool getSelectedTool() const { return tool; }
+    QColor getColor() const { return color; }
 
     void selectTool(Tool tool);
+    void setColor(const QColor &newColor);
     void undo();
     void redo();
     void clearImage();
@@ -36,8 +38,8 @@ private:
     QPixmap image;
     QPixmap tempImage;
     bool drawing;
-    Tool tool; // Add the tool member
-    QColor color; // Add the color member
-    QStack<QPixmap> undoStack; // Add a stack of images for undo
-    QStack<QPixmap> redoStack; // Add a stack of images for redo
+    Tool tool;
+    QColor color;
+    QStack<QPixmap> undoStack;
+    QStack<QPixmap> redoStack;
 };
