@@ -10,7 +10,7 @@ class PaintingArea : public QWidget {
 public:
     PaintingArea(QWidget *parent = nullptr);
     
-    enum Tool { Pencil, Line, Rectangle, Ellipse, Eraser }; // Define the Draw and Erase enum values
+    enum Tool { Pencil, Line, Rectangle, Ellipse, Star, Eraser }; // Define the Draw and Erase enum values
 
     Tool getSelectedTool() const { return tool; }
     QColor getColor() const { return color; }
@@ -42,4 +42,19 @@ private:
     QColor color;
     QStack<QPixmap> undoStack;
     QStack<QPixmap> redoStack;
+
+    
+    QPolygonF starPolygon(QPointF center, QPointF outer, int points, double ratio) {
+        QPolygonF polygon;
+        double angleStep = 2 * M_PI / points;
+        double outerRadius = QLineF(center, outer).length();
+        double innerRadius = outerRadius * ratio;
+        for (int i = 0; i < points; ++i) {
+            double angle = i * angleStep;
+            polygon << center + QPointF(cos(angle), sin(angle)) * outerRadius;
+            angle += angleStep / 2;
+            polygon << center + QPointF(cos(angle), sin(angle)) * innerRadius;
+        }
+        return polygon;
+    }
 };

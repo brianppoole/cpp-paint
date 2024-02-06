@@ -141,6 +141,20 @@ MainWindow::MainWindow(QWidget *parent)
         selectToolEllipseAction->setChecked(true);
     }
 
+    // Create an action for the "Star" button
+    QAction *selectToolStarAction = new QAction("Star", this);
+    selectToolStarAction->setCheckable(true);
+    actionGroup->addAction(selectToolStarAction);
+    toolbar->addAction(selectToolStarAction);
+    connect(selectToolStarAction, &QAction::triggered, [paintingArea, selectToolStarAction]() { 
+        paintingArea->selectTool(PaintingArea::Star); 
+        selectToolStarAction->setChecked(true); 
+    });
+    // Set the action as the checked action if the tool is Star
+    if (paintingArea->getSelectedTool() == PaintingArea::Star) {
+        selectToolStarAction->setChecked(true);
+    }
+
     // Create an action for the "Eraser" button
     QAction *selectToolEraserAction = new QAction("Eraser", this);
     selectToolEraserAction->setCheckable(true);

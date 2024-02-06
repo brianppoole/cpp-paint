@@ -78,6 +78,10 @@ void PaintingArea::mouseMoveEvent(QMouseEvent *event) {
                     painter.setPen(pen);
                     painter.drawEllipse(QRect(lastPoint, event->pos()));
                     break;
+                case Star:
+                    painter.setPen(pen);
+                    painter.drawPolygon(starPolygon(lastPoint, event->pos(), 5, 0.5));
+                    break;
                 default:
                     break;
             }
