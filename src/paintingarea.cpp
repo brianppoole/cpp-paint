@@ -1,6 +1,6 @@
 #include "paintingarea.h"
 
-PaintingArea::PaintingArea(QWidget *parent) : QWidget(parent), drawing(false) {
+PaintingArea::PaintingArea(QWidget *parent) : QWidget(parent), drawing(false), tool(Pencil) {
     this->resize(parent->size()); // Resize the widget to the size of the parent
     image = QPixmap(size()); // Create a QPixmap the same size as the widget
     image.fill(Qt::white); // Fill the QPixmap with white
@@ -35,16 +35,41 @@ void PaintingArea::mousePressEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
         lastPoint = event->pos();
         drawing = true;
+        tempImage = image; // Copy the image to the temporary image
+
+        undoStack.push(image); // Push the current image onto the stack
+        redoStack.clear(); // Clear the redo stack
     }
 }
 
 void PaintingArea::mouseMoveEvent(QMouseEvent *event) {
-    // If the left mouse button is pressed and drawing has started, draw a line from the last point to the current point
-    if ((event->buttons() & Qt::LeftButton) && drawing) {
+    // If the left mouse button is pressed and the tool is Pencil, draw a line from the last point to the current point
+    if ((event->buttons() & Qt::LeftButton) && drawing && (tool == Pencil || tool == Eraser)) {
         QPainter painter(&image);
-        painter.setPen(color); // Set the color of the pen
+        painter.setPen(color);
         painter.drawLine(lastPoint, event->pos());
         lastPoint = event->pos();
+        update();
+    }
+
+     // If the tool is not Pencil, draw the shape
+    if (tool != Pencil && tool != Eraser) {
+        tempImage = image; // Copy the image to the temporary image
+        QPainter painter(&tempImage);
+        painter.setPen(color);
+        switch (tool) {
+            case Line:
+                painter.drawLine(lastPoint, event->pos());
+                break;
+            case Rectangle:
+                painter.drawRect(QRect(lastPoint, event->pos()));
+                break;
+            case Ellipse:
+                painter.drawEllipse(QRect(lastPoint, event->pos()));
+                break;
+            default:
+                break;
+        }
         update();
     }
 }
@@ -54,15 +79,59 @@ void PaintingArea::mouseReleaseEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton && drawing) {
         drawing = false;
     }
+
+    // If the tool is not Pencil, draw the shape
+    if (tool != Pencil && tool != Eraser) {
+        QPainter painter(&image);
+        painter.setPen(color);
+        switch (tool) {
+            case Line:
+                painter.drawLine(lastPoint, event->pos());
+                break;
+            case Rectangle:
+                painter.drawRect(QRect(lastPoint, event->pos()));
+                break;
+            case Ellipse:
+                painter.drawEllipse(QRect(lastPoint, event->pos()));
+                break;
+            default:
+                break;
+        }
+        image = tempImage; // Copy the temporary image back to the image
+        update();
+    }
 }
 
-void PaintingArea::selectTool(Mode tool) {
-    mode = tool;
+void PaintingArea::selectTool(Tool newTool) {
+    tool = newTool;
     if (tool == Eraser) {
         color = Qt::white;
     } else {
         color = Qt::black;
     }
+}
+
+void PaintingArea::undo() {
+    if (!undoStack.isEmpty()) {
+        redoStack.push(image); // Push the current image onto the redo stack
+        image = undoStack.pop(); // Pop the last image from the stack
+        tempImage = image; // Copy the image to the temporary image
+        update();
+    }
+}
+
+void PaintingArea::redo() {
+    if (!redoStack.isEmpty()) {
+        undoStack.push(image); // Push the current image onto the undo stack
+        image = redoStack.pop(); // Pop the last image from the stack
+        tempImage = image; // Copy the image to the temporary image
+        update();
+    }
+}
+
+void PaintingArea::clearImage() {
+    image.fill(Qt::white); // Fill the image with white
+    update();
 }
 
 void PaintingArea::paintEvent(QPaintEvent *event) {
@@ -77,5 +146,10 @@ void PaintingArea::paintEvent(QPaintEvent *event) {
     // // Draw a line from (50, 100) to (100, 150)
     // painter.drawLine(50, 100, 100, 150);
 
-    painter.drawPixmap(0, 0, image);
+    QRect dirtyRect = event->rect();
+    if (tool != Pencil && tool != Eraser) {
+        painter.drawPixmap(0, 0, tempImage);
+    } else {
+        painter.drawPixmap(0, 0, image);
+    }
 }

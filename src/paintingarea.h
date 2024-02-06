@@ -2,6 +2,7 @@
 #include <QPainter>
 #include <QMouseEvent>
 #include <QPixmap>
+#include <QStack>
 
 class PaintingArea : public QWidget {
     Q_OBJECT
@@ -9,9 +10,14 @@ class PaintingArea : public QWidget {
 public:
     PaintingArea(QWidget *parent = nullptr);
     
-    enum Mode { Pencil, Line, Square, Circle, Eraser }; // Define the Draw and Erase enum values
+    enum Tool { Pencil, Line, Rectangle, Ellipse, Eraser }; // Define the Draw and Erase enum values
 
-    void selectTool(Mode mode);
+    Tool getSelectedTool() const { return tool; }
+
+    void selectTool(Tool tool);
+    void undo();
+    void redo();
+    void clearImage();
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -26,7 +32,10 @@ private:
 
     QPoint lastPoint;
     QPixmap image;
+    QPixmap tempImage;
     bool drawing;
-    Mode mode; // Add the mode member
+    Tool tool; // Add the tool member
     QColor color; // Add the color member
+    QStack<QPixmap> undoStack; // Add a stack of images for undo
+    QStack<QPixmap> redoStack; // Add a stack of images for redo
 };
